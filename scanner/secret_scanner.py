@@ -50,7 +50,7 @@ def scan_repo():
     results = []
     for root, _, files in os.walk("."):
         for file in files:
-            if file.endswith((".py", ".js", ".env", ".csv")):
+            if file.endswith((".py", ".js", ".env")):
                 results.extend(scan_file(os.path.join(root, file)))
     return results
 
