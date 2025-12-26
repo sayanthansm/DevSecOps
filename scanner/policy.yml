@@ -1,0 +1,7 @@
+enforcement:
+  block:
+    - HIGH
+  warn:
+    - MEDIUM
+  allow:
+    - LOW
