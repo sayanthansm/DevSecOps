@@ -3,5 +3,3 @@ enforcement:
   warn:
     - HIGH
     - MEDIUM
-  allow:
-    - LOW
