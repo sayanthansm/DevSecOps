@@ -62,9 +62,6 @@ def scan_repo():
             if file.endswith((".py", ".js", ".env")):
                 results.extend(scan_file(full_path))
     return results
-s
-
-    
 
 
 def load_last_scan():
