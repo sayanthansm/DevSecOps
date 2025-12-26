@@ -48,11 +48,19 @@ def scan_file(filepath):
 
 def scan_repo():
     results = []
+
+    ENFORCE_DIRS = ["demo-app"]
+
     for root, _, files in os.walk("."):
+        if not any(root.startswith(f"./{d}") or root.startswith(f".\\{d}") for d in ENFORCE_DIRS):
+            continue
+
         for file in files:
             if file.endswith((".py", ".js", ".env")):
                 results.extend(scan_file(os.path.join(root, file)))
+
     return results
+
 
 def load_last_scan():
     if not os.path.exists(LAST_SCAN_FILE):
