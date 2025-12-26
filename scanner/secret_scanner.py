@@ -4,6 +4,25 @@ from rules import SECRET_PATTERNS
 
 POLICY_FILE = "scanner/policy.yml"
 
+FIX_GUIDE = {
+    "AWS Access Key": {
+        "env": "AWS_ACCESS_KEY_ID",
+        "steps": [
+            "Remove hardcoded AWS key from source code",
+            "Add AWS_ACCESS_KEY_ID to GitHub Secrets",
+            "Access it using os.getenv('AWS_ACCESS_KEY_ID')"
+        ]
+    },
+    "Generic API Key": {
+        "env": "API_KEY",
+        "steps": [
+            "Remove hardcoded API key",
+            "Add API_KEY to environment variables",
+            "Access it using os.getenv('API_KEY')"
+        ]
+    }
+}
+
 def load_policy():
     with open(POLICY_FILE, "r") as f:
         return yaml.safe_load(f)["enforcement"]
@@ -27,22 +46,18 @@ def scan_file(filepath):
 
 def scan_repo():
     results = []
-    files_scanned = 0
-
     for root, _, files in os.walk("."):
         for file in files:
             if file.endswith((".py", ".js", ".env", ".csv")):
-                files_scanned += 1
                 results.extend(scan_file(os.path.join(root, file)))
-
-    return results, files_scanned
+    return results
 
 if __name__ == "__main__":
     policy = load_policy()
-    findings, files_scanned = scan_repo()
+    findings = scan_repo()
 
+    block = False
     severity_count = {}
-    block_build = False
 
     if findings:
         print("\n🔐 SECRET ANALYSIS REPORT\n")
@@ -51,22 +66,27 @@ if __name__ == "__main__":
             sev = f["severity"]
             severity_count[sev] = severity_count.get(sev, 0) + 1
 
-            print(f"Type     : {f['type']}")
-            print(f"Severity : {sev}")
-            print(f"File     : {f['file']}:{f['line']}")
-            print("Fix      : Move secret to environment variable\n")
+            print(f"❌ Secret Type : {f['type']}")
+            print(f"   Severity   : {sev}")
+            print(f"   Location   : {f['file']}:{f['line']}")
+
+            guide = FIX_GUIDE.get(f["type"])
+            if guide:
+                print("   Suggested Fix:")
+                for step in guide["steps"]:
+                    print(f"     - {step}")
+            print()
 
             if sev in policy["block"]:
-                block_build = True
+                block = True
 
-    print("\n📊 SCAN SUMMARY")
-    print(f"- Files scanned : {files_scanned}")
+    print("📊 SCAN SUMMARY")
     for sev, count in severity_count.items():
         print(f"- {sev} secrets : {count}")
 
-    if block_build:
-        print("\n🚨 BUILD BLOCKED BY POLICY")
+    if block:
+        print("\n🚨 BUILD BLOCKED — FIX REQUIRED")
         exit(1)
     else:
-        print("\n✅ BUILD PASSED BY POLICY")
+        print("\n✅ BUILD PASSED — POLICY SATISFIED")
         exit(0)
