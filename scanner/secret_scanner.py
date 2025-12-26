@@ -104,6 +104,10 @@ if __name__ == "__main__":
         current_summary = severity_count
     last_summary = load_last_scan()
 
+       # Prepare summaries
+    current_summary = severity_count
+    last_summary = load_last_scan()
+
     print("\n🔄 SECURITY CHANGE SUMMARY")
     for sev in set(current_summary.keys()).union(last_summary.keys()):
         prev = last_summary.get(sev, 0)
@@ -115,7 +119,10 @@ if __name__ == "__main__":
         else:
             print(f"• {sev} unchanged: {curr}")
 
+    # Save scan summary for next run comparison
     save_current_scan(current_summary)
+
+    # Final enforcement decision
     if block:
         print("\n🚫 Build blocked due to high severity findings.")
         exit(1)
