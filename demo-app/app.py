@@ -6,6 +6,7 @@ import csv
 TEST_FILE = "demo_app/test_keys.csv"
 AWS_KEY = "AKIA1234567890ABCDE1"
 
+
 def load_test_keys():
     keys = []
     with open(TEST_FILE, newline="") as csvfile:

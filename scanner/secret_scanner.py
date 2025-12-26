@@ -51,23 +51,18 @@ def scan_file(filepath):
 
 def scan_repo():
     results = []
-
-    ENFORCE_DIRS = ["demo_app"]
-    EXCLUDE_DIRS = ["demo-app/test_keys.csv"]
-
-
     for root, _, files in os.walk("."):
-        if not any(d in root.split(os.sep) for d in ENFORCE_DIRS):
-            continue
-
-
         for file in files:
             full_path = os.path.join(root, file)
+
+            # Skip test data explicitly
             if full_path.endswith("test_keys.csv"):
                 continue
+
             if file.endswith((".py", ".js", ".env")):
                 results.extend(scan_file(full_path))
     return results
+s
 
     
 
