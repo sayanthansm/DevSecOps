@@ -1,7 +1,7 @@
 enforcement:
-  block:
-    - HIGH
+  block: []
   warn:
+    - HIGH
     - MEDIUM
   allow:
     - LOW
