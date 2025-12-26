@@ -1,6 +1,8 @@
 import os
 import yaml
 from rules import SECRET_PATTERNS
+LAST_SCAN_FILE = "scanner/.last_scan.yml"
+
 
 POLICY_FILE = "scanner/policy.yml"
 
@@ -52,6 +54,17 @@ def scan_repo():
                 results.extend(scan_file(os.path.join(root, file)))
     return results
 
+def load_last_scan():
+    if not os.path.exists(LAST_SCAN_FILE):
+        return {}
+    with open(LAST_SCAN_FILE, "r") as f:
+        return yaml.safe_load(f) or {}
+
+def save_current_scan(summary):
+    with open(LAST_SCAN_FILE, "w") as f:
+        yaml.safe_dump(summary, f)
+
+
 def print_pr_friendly(findings):
     print("\n🧾 SECURITY REVIEW \n")
     for idx, f in enumerate(findings, start=1):
@@ -80,13 +93,24 @@ if __name__ == "__main__":
             if sev in policy["block"]:
                 block = True
 
-    print("📊 SUMMARY")
-    for sev, count in severity_count.items():
-        print(f"- {sev}: {count}")
+        current_summary = severity_count
+    last_summary = load_last_scan()
 
+    print("\n🔄 SECURITY CHANGE SUMMARY")
+    for sev in set(current_summary.keys()).union(last_summary.keys()):
+        prev = last_summary.get(sev, 0)
+        curr = current_summary.get(sev, 0)
+        if curr > prev:
+            print(f"⚠ {sev} increased: {prev} → {curr}")
+        elif curr < prev:
+            print(f"✅ {sev} reduced: {prev} → {curr}")
+        else:
+            print(f"• {sev} unchanged: {curr}")
+
+    save_current_scan(current_summary)
     if block:
-        print("\n🚨 BUILD BLOCKED BY POLICY")
+        print("\n🚫 Build blocked due to high severity findings.")
         exit(1)
     else:
-        print("\n✅ BUILD PASSED BY POLICY")
+        print("\n✅ No blocking issues found. Build can proceed.")
         exit(0)
