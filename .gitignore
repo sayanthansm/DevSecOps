@@ -1,0 +1,12 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+
+# Scanner runtime state (regression tracking)
+scanner/.last_scan.yml
+
+# Environment files
+.env
