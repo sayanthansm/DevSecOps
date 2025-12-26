@@ -1,6 +1,9 @@
 import os
 import yaml
 from rules import SECRET_PATTERNS
+
+CI_AUDIT_MODE = os.getenv("CI_AUDIT_MODE", "false").lower() == "true"
+
 LAST_SCAN_FILE = "scanner/.last_scan.yml"
 
 
@@ -129,9 +132,12 @@ if __name__ == "__main__":
     save_current_scan(current_summary)
 
     # Final enforcement decision
-    if block:
+    if block and not CI_AUDIT_MODE:
         print("\n🚫 Build blocked due to high severity findings.")
         exit(1)
     else:
-        print("\n✅ No blocking issues found. Build can proceed.")
+        if CI_AUDIT_MODE:
+            print("\nℹ CI running in AUDIT mode — enforcement skipped")
+        print("\n✅ Build can proceed.")
         exit(0)
+
