@@ -52,7 +52,7 @@ def scan_file(filepath):
 def scan_repo():
     results = []
 
-    ENFORCE_DIRS = ["demo-app"]
+    ENFORCE_DIRS = ["demo_app"]
     EXCLUDE_DIRS = ["demo-app/test_keys.csv"]
 
 
