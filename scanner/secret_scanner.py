@@ -52,6 +52,18 @@ def scan_repo():
                 results.extend(scan_file(os.path.join(root, file)))
     return results
 
+def print_pr_friendly(findings):
+    print("\n🧾 SECURITY REVIEW \n")
+    for idx, f in enumerate(findings, start=1):
+        print(f"{idx}. ❌ **{f['type']}** ({f['severity']})")
+        print(f"   - Location: `{f['file']}:{f['line']}`")
+        guide = FIX_GUIDE.get(f["type"])
+        if guide:
+            print(f"   - Fix:")
+            for step in guide["steps"]:
+                print(f"     • {step}")
+        print()
+
 if __name__ == "__main__":
     policy = load_policy()
     findings = scan_repo()
@@ -60,33 +72,21 @@ if __name__ == "__main__":
     severity_count = {}
 
     if findings:
-        print("\n🔐 SECRET ANALYSIS REPORT\n")
+        print_pr_friendly(findings)
 
         for f in findings:
             sev = f["severity"]
             severity_count[sev] = severity_count.get(sev, 0) + 1
-
-            print(f"❌ Secret Type : {f['type']}")
-            print(f"   Severity   : {sev}")
-            print(f"   Location   : {f['file']}:{f['line']}")
-
-            guide = FIX_GUIDE.get(f["type"])
-            if guide:
-                print("   Suggested Fix:")
-                for step in guide["steps"]:
-                    print(f"     - {step}")
-            print()
-
             if sev in policy["block"]:
                 block = True
 
-    print("📊 SCAN SUMMARY")
+    print("📊 SUMMARY")
     for sev, count in severity_count.items():
-        print(f"- {sev} secrets : {count}")
+        print(f"- {sev}: {count}")
 
     if block:
-        print("\n🚨 BUILD BLOCKED — FIX REQUIRED")
+        print("\n🚨 BUILD BLOCKED BY POLICY")
         exit(1)
     else:
-        print("\n✅ BUILD PASSED — POLICY SATISFIED")
+        print("\n✅ BUILD PASSED BY POLICY")
         exit(0)
