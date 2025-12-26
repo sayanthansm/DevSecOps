@@ -1,5 +1,5 @@
 enforcement:
-  block: []
-  warn:
+  block:
     - HIGH
+  warn:
     - MEDIUM
