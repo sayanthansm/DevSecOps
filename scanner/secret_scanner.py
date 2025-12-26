@@ -57,8 +57,9 @@ def scan_repo():
 
 
     for root, _, files in os.walk("."):
-        if not any(root.startswith(f"./{d}") or root.startswith(f".\\{d}") for d in ENFORCE_DIRS):
+        if not any(d in root.split(os.sep) for d in ENFORCE_DIRS):
             continue
+
 
         for file in files:
             full_path = os.path.join(root, file)
