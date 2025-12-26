@@ -6,10 +6,11 @@ def scan_file(filepath):
     try:
         with open(filepath, "r", errors="ignore") as f:
             for line_no, line in enumerate(f.readlines(), start=1):
-                for secret_type, pattern in SECRET_PATTERNS.items():
-                    if pattern.search(line):
+                for secret_type, meta in SECRET_PATTERNS.items():
+                    if meta["pattern"].search(line):
                         findings.append({
                             "type": secret_type,
+                            "severity": meta["severity"],
                             "file": filepath,
                             "line": line_no
                         })
@@ -27,13 +28,28 @@ def scan_repo():
 
 if __name__ == "__main__":
     findings = scan_repo()
-    if findings:
-        print("\n❌ SECRET DETECTED\n")
-        for f in findings:
-            print(f"Type     : {f['type']}")
-            print(f"File     : {f['file']}:{f['line']}")
-            print("Lineage  : Hardcoded directly in source file")
-            print("Fix      : Move secret to environment variable\n")
+
+    if not findings:
+        print("✅ No secrets detected")
+        exit(0)
+
+    print("\n🔐 SECRET ANALYSIS REPORT\n")
+
+    high_risk_found = False
+
+    for f in findings:
+        print(f"Type     : {f['type']}")
+        print(f"Severity : {f['severity']}")
+        print(f"File     : {f['file']}:{f['line']}")
+        print("Lineage  : Hardcoded directly in source file")
+        print("Fix      : Move secret to environment variable\n")
+
+        if f["severity"] == "HIGH":
+            high_risk_found = True
+
+    if high_risk_found:
+        print("🚨 HIGH-RISK SECRET DETECTED — BUILD BLOCKED")
         exit(1)
     else:
-        print("✅ No secrets detected")
+        print("⚠️ MEDIUM-RISK SECRET DETECTED — WARNING ONLY")
+        exit(0)
