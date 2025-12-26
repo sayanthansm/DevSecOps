@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "🔍 Running secret scan before commit..."
+python scanner/secret_scanner.py
