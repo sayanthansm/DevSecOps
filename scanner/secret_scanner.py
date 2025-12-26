@@ -20,36 +20,46 @@ def scan_file(filepath):
 
 def scan_repo():
     results = []
+    files_scanned = 0
+
     for root, _, files in os.walk("."):
         for file in files:
-            if file.endswith((".py", ".js", ".env")):
+            if file.endswith((".py", ".js", ".env", ".csv")):
+                files_scanned += 1
                 results.extend(scan_file(os.path.join(root, file)))
-    return results
+
+    return results, files_scanned
 
 if __name__ == "__main__":
-    findings = scan_repo()
+    findings, files_scanned = scan_repo()
 
-    if not findings:
-        print("✅ No secrets detected")
-        exit(0)
+    high_count = 0
+    medium_count = 0
 
-    print("\n🔐 SECRET ANALYSIS REPORT\n")
+    if findings:
+        print("\n🔐 SECRET ANALYSIS REPORT\n")
 
-    high_risk_found = False
+        for f in findings:
+            print(f"Type     : {f['type']}")
+            print(f"Severity : {f['severity']}")
+            print(f"File     : {f['file']}:{f['line']}")
+            print("Lineage  : Hardcoded directly in source file")
+            print("Fix      : Move secret to environment variable\n")
 
-    for f in findings:
-        print(f"Type     : {f['type']}")
-        print(f"Severity : {f['severity']}")
-        print(f"File     : {f['file']}:{f['line']}")
-        print("Lineage  : Hardcoded directly in source file")
-        print("Fix      : Move secret to environment variable\n")
+            if f["severity"] == "HIGH":
+                high_count += 1
+            elif f["severity"] == "MEDIUM":
+                medium_count += 1
 
-        if f["severity"] == "HIGH":
-            high_risk_found = True
+    print("\n📊 SCAN SUMMARY")
+    print(f"- Files scanned       : {files_scanned}")
+    print(f"- HIGH-risk secrets   : {high_count}")
+    print(f"- MEDIUM-risk secrets : {medium_count}")
+    print(f"- Invalid ignored     : {files_scanned - (high_count + medium_count)}")
 
-    if high_risk_found:
-        print("🚨 HIGH-RISK SECRET DETECTED — BUILD BLOCKED")
+    if high_count > 0:
+        print("\n🚨 BUILD BLOCKED DUE TO HIGH-RISK SECRETS")
         exit(1)
     else:
-        print("⚠️ MEDIUM-RISK SECRET DETECTED — WARNING ONLY")
+        print("\n✅ BUILD PASSED")
         exit(0)
