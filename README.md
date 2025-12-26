@@ -1,4 +1,3 @@
-Set-Content -Path 'd:\CODE\Projects\DevSecOps\README.md' -Value @'
 # DevSecOps: Policy-Driven Secret Leak Prevention in CI/CD
 
 ## Overview
@@ -176,4 +175,3 @@ This project demonstrates how DevSecOps principles can be applied to:
 - Improve developer adoption
 
 It is CI-platform agnostic, extensible, and production-oriented.
-'@ -Encoding UTF8
